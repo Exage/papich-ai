@@ -1,0 +1,2 @@
+# One public video URL per line. Empty lines and comments are ignored.
+# Paste your own links into urls.txt. Shorts, youtu.be and watch URLs work.

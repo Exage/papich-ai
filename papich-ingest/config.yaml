@@ -1,0 +1,26 @@
+data_dir: data
+# Optional absolute paths; relative paths below are relative to data_dir.
+audio_dir: audio
+transcripts_dir: transcripts
+chunks_dir: chunks
+db_dir: db
+logs_dir: logs
+whisper_model: small
+language: ru
+audio_block_seconds: 600
+embedding_model: intfloat/multilingual-e5-small
+embedding_device: cpu
+embedding_batch_size: 8
+passage_prefix: 'passage: '
+query_prefix: 'query: '
+chunk_target_words: 450
+# E5 has 512 tokens including prefix/special tokens. Never silently truncate.
+chunk_max_tokens: 480
+chunk_overlap_tokens: 64
+top_k: 5
+dedup_threshold: 0.92
+delete_audio_after_processing: true
+diarization_enabled: false
+diarization_model: pyannote/speaker-diarization-community-1
+# Optional local Netscape cookies file for videos your account can access.
+cookies_file: null

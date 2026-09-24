@@ -1,0 +1,87 @@
+# Python environments and generated files
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local pipeline results and backups
+/data/
+/data.backup*/
+/audio/
+/transcripts/
+/chunks/
+/db/
+/logs/
+*.log
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Downloaded models and caches (src/models.py remains tracked)
+/models/
+/model-cache/
+/mlx_models/
+/.cache/
+/.huggingface/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.npz
+
+# Downloaded audio/video and partial downloads
+*.wav
+*.aiff
+*.aif
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.opus
+*.webm
+*.mp4
+*.mkv
+*.part
+*.ytdl
+
+# Personal URL lists and local configuration
+/urls.txt
+/urls.local*.txt
+/config.local*.yaml
+/config.local*.yml
+
+# Secrets and browser sessions; keep example environment files
+.env
+.env.*
+!.env.example
+!.env.template
+cookies.txt
+cookies*.txt
+*.cookies
+*.pem
+*.key
+
+# macOS and editor temporary files
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.tmp
