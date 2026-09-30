@@ -1,0 +1,7 @@
+.venv/
+.venv-xtts/
+__pycache__/
+.pytest_cache/
+data/
+*.log
+.DS_Store

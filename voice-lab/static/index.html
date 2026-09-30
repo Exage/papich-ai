@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice Lab — твой голос, новые слова</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js?v=engines-5" defer></script>
+</head>
+<body>
+<header><a class="brand" href="/" aria-label="Voice Lab, главная"><span class="brand-icon">≋</span>voice lab<span class="version">LOCAL / 01</span></a><span class="local"><i></i> На твоём Mac</span></header>
+  <main>
+    <section class="intro"><div class="eyebrow">ЛАБОРАТОРИЯ ГОЛОСА</div><h1>Твой голос.<br><span>Новые слова.</span></h1><p>Загрузи запись, проверь звучание и поговори с Gemma.<br>Ответы нейросети — твоим синтезированным голосом.</p></section>
+    <div class="status-strip"><span id="ollamaStatus">◌ Проверяем Ollama…</span><span id="ttsStatus">◌ Проверяем озвучку…</span><button id="prepare" class="link-button">Подготовить озвучку</button></div>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div class="workspace">
+      <aside class="card voice-card">
+        <div class="section-title"><span class="step">01</span><h2>Твой голос</h2></div>
+        <p class="muted">Чистая запись обычной речи. Без музыки и других голосов.</p>
+        <form id="uploadForm">
+          <label class="dropzone" id="dropzone"><span class="upload-icon">↥</span><strong id="fileName">Выбрать запись</strong><span>или перетащить сюда</span><small>WAV, M4A, MP3 и другие · до 30 МБ</small><input id="file" type="file" accept="audio/*,.m4a,.flac,.webm" required></label>
+          <audio id="sourcePreview" controls hidden aria-label="Исходная запись"></audio>
+          <div class="two-fields"><label>Начало, сек.<input id="start" type="number" min="0" max="3600" value="0" step="0.1"></label><label>Фрагмент, сек.<input id="seconds" type="number" min="3" max="120" value="15" step="0.1"></label></div>
+          <p class="hint">Можно выбрать от 3 до 120 секунд. Для всей записи укажи начало 0 и её длительность в секундах. Короткий чистый фрагмент обрабатывается быстрее.</p>
+          <details><summary>Уточнить голос</summary><label>Название<input id="voiceName" maxlength="80" value="Мой голос"></label><label>Точный текст выбранного фрагмента<textarea id="transcript" rows="3" maxlength="3000" placeholder="Необязательно. Расшифровка помогает передать манеру речи."></textarea></label></details>
+          <button id="upload" class="secondary full" type="submit">Сохранить голос <span>↗</span></button>
+        </form>
+        <div class="saved-voice"><label for="voices">Сохранённый голос</label><select id="voices"><option value="">Пока нет записей</option></select><p id="voiceInfo" class="hint">Запись хранится только на этом компьютере.</p><audio id="voicePreview" controls hidden aria-label="Выбранный образец голоса"></audio>
+          <div id="savedVoiceEditor" hidden><label for="savedTranscript">Текст сохранённого образца</label><textarea id="savedTranscript" rows="4" maxlength="3000" placeholder="Прослушай образец выше и запиши дословно всё, что в нём сказано."></textarea><p class="hint">Точная расшифровка включает режим с голосовым примером и помогает передать манеру речи. Текст должен совпадать со всем сохранённым фрагментом.</p><button id="saveTranscript" class="secondary full">Сохранить расшифровку</button></div>
+        </div>
+      </aside>
+      <section class="card interaction">
+        <div class="section-title"><span class="step">02</span><h2>Послушай результат</h2></div>
+        <div class="engine-settings">
+          <label for="engine">Движок озвучки</label><select id="engine"><option value="chatterbox">Chatterbox Multilingual V3</option><option value="qwen">Qwen3-TTS 1.7B</option><option value="xtts">XTTS v2</option></select>
+          <p id="engineHint" class="hint"></p>
+          <div id="expressionSettings">
+            <label for="exaggeration">Выразительность: <output id="expressionValue">0.5</output></label>
+            <input id="exaggeration" type="range" min="0" max="1" step="0.1" value="0.5">
+            <p class="hint">Усиливает подачу, но не выбирает конкретную эмоцию. Начни с 0.5.</p>
+          </div>
+          <div id="chatterboxAdvanced" hidden>
+            <details>
+              <summary>Расширенные настройки Chatterbox</summary>
+              <div class="settings-grid">
+                <div class="setting-row">
+                  <label for="cfg_weight">CFG (обусловливание): <output id="cfgWeightValue">0.5</output></label>
+                  <input id="cfg_weight" type="number" min="0" max="2" step="0.1" value="0.5">
+                  <p class="hint">Меняет силу обусловливания при генерации; больше не обязательно лучше.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="temperature">Температура: <output id="temperatureValue">0.8</output></label>
+                  <input id="temperature" type="number" min="0.1" max="1.5" step="0.1" value="0.8">
+                  <p class="hint">Повышает вариативность; высокие значения могут снижать стабильность.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="repetition_penalty">Штраф за повторы: <output id="repetitionPenaltyValue">1.2</output></label>
+                  <input id="repetition_penalty" type="number" min="1" max="2" step="0.1" value="1.2">
+                  <p class="hint">Помогает уменьшать повторы; чрезмерное значение может портить речь.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="top_p">Top-p: <output id="topPValue">1.0</output></label>
+                  <input id="top_p" type="number" min="0.01" max="1" step="0.01" value="1.0">
+                  <p class="hint">Отбирает варианты с накопленной вероятностью до порога.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="min_p">Min-p: <output id="minPValue">0.05</output></label>
+                  <input id="min_p" type="number" min="0" max="1" step="0.01" value="0.05">
+                  <p class="hint">Минимальный порог вероятности для отбора вариантов.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="max_new_tokens">Лимит токенов:</label>
+                  <input id="max_new_tokens" type="number" min="100" max="3000" step="100" value="1500">
+                  <p class="hint">Ограничивает длину генерации в токенах, не в секундах; маленький лимит может обрезать фразу.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="lang_code">Язык:</label>
+                  <select id="lang_code"></select>
+                  <p class="hint">Код языка для мультиязычной модели. По умолчанию русский.</p>
+                </div>
+                <div class="setting-row">
+                  <label for="seed">Seed (пусто = авто):</label>
+                  <input id="seed" type="number" min="0" max="4294967295" step="1" placeholder="авто">
+                  <p class="hint">Помогает сравнивать настройки в одинаковых условиях; побитовая повторяемость между устройствами и версиями не гарантируется.</p>
+                </div>
+                <div class="setting-row checkbox-row">
+                  <label class="checkbox"><input id="verbose" type="checkbox"> Подробный журнал (в консоль сервера)</label>
+                  <p class="hint">Диагностический вывод в журнал сервера, не улучшение качества.</p>
+                </div>
+              </div>
+              <button id="resetChatterbox" class="secondary" type="button">Сбросить настройки</button>
+            </details>
+          </div>
+          <div id="xttsLicense" hidden><p class="hint">Перед первым запуском прочитай <a href="https://huggingface.co/coqui/XTTS-v2/blob/main/LICENSE.txt" target="_blank" rel="noopener">лицензию XTTS (CPML)</a>. Её условия отличаются от лицензий других движков.</p><label class="checkbox"><input id="acceptXtts" type="checkbox">Я ознакомился с лицензией XTTS и принимаю её условия</label></div>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Режим"><button role="tab" id="testTab" aria-selected="true" aria-controls="testPanel">Проверка голоса</button><button role="tab" id="chatTab" aria-selected="false" aria-controls="chatPanel">Чат с Gemma</button></div>
+        <div id="testPanel" role="tabpanel" aria-labelledby="testTab">
+          <p class="muted">Сначала озвучь знакомую фразу и сравни с оригиналом.</p>
+          <p class="hint">Для эмоциональной подачи сохрани образец с нужной интонацией. Например: «Мой голос — радостно». Для Qwen добавь точную расшифровку. Перенос эмоции зависит от записи и не гарантирован.</p>
+          <label for="testText">Текст для озвучки</label><textarea id="testText" rows="6" maxlength="1500">Привет! Это мой первый тест. Сейчас нейросеть произносит новые слова моим голосом. Как тебе результат?</textarea>
+          <div class="action-row"><span class="hint">Русский язык · локальная генерация</span><button class="primary" id="speak">Озвучить <span>→</span></button></div>
+          <div id="testResult" class="result" hidden><div class="eyebrow">СИНТЕЗИРОВАННЫЙ ГОЛОС</div><audio id="testAudio" controls aria-label="Результат озвучки"></audio><div class="result-footer"><span id="testTiming"></span><a id="testDownload" download>Скачать WAV ↗</a></div><details class="generation-params"><summary>Параметры этой генерации</summary><pre id="testParams" class="params-json"></pre><button id="copyTestParams" class="link-button" type="button">Копировать JSON</button></details></div>
+          <div class="empty" id="testEmpty"><div class="waveform" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span>Здесь появится твой новый голос</span></div>
+        </div>
+        <div id="chatPanel" role="tabpanel" aria-labelledby="chatTab" hidden>
+          <div class="model-row"><label for="model">Модель ответов</label><select id="model"><option value="">Загрузка…</option></select><button id="clear" class="link-button">Очистить чат</button></div>
+          <div id="messages" class="messages" aria-live="polite"><p id="chatEmpty" class="muted">Задай короткий вопрос. Gemma напишет ответ, затем голосовая модель озвучит его.</p></div>
+          <form id="chatForm"><label for="question">Твой вопрос</label><textarea id="question" rows="3" maxlength="2000" placeholder="Например: придумай приветствие для моего приложения" required></textarea><div class="action-row"><label class="checkbox"><input id="autoSpeech" type="checkbox" checked> Озвучивать ответы</label><button class="primary" id="ask" type="submit">Спросить <span>→</span></button></div></form>
+        </div>
+      </section>
+    </div>
+    <footer><span>Gemma придумывает текст. Выбранный движок создаёт речь.</span><span>Никаких платных API</span></footer>
+  </main>
+</body>
+</html>
